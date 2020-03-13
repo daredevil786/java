@@ -1,0 +1,88 @@
+package com.example.myappsid4;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+
+public class MainActivity extends AppCompatActivity {
+
+    Button addB, deleteB, updateB,viewB,viewAllB;
+    EditText regNum,name,marks;
+    SQLiteDatabase db;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+
+        addB =  (Button)findViewById(R.id.button);
+        deleteB =  (Button)findViewById(R.id.button2);
+        updateB = (Button)findViewById(R.id.button5);
+        viewB =  (Button)findViewById(R.id.button3);
+        viewAllB = (Button)findViewById(R.id.button4);
+        regNum = (EditText)findViewById(R.id.editText);
+        name = (EditText)findViewById(R.id.editText2);
+        marks = (EditText)findViewById(R.id.editText3);
+
+        db  = openOrCreateDatabase("Student", Context.MODE_PRIVATE,null);
+        db.execSQL("CREATE TABLE IF NOT EXISTS STUDENT(RegNo VARCHAR,Name VARCHAR,Mark VARCHAR)");
+
+        addB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (regNum.getText().toString().trim().length() == 0 || name.getText().toString().trim().length() == 0 ||
+                        marks.getText().toString().trim().length() == 0) {
+                    showMessage("Error", "Please enter all values");
+                    return;
+                }
+                db.execSQL("INSERT INTO STUDENT VALUES('" +regNum.getText()+ "','" +name.getText()+ "','" +marks.getText()+ "');");
+                showMessage("Success", "Record Added");
+                clearText();
+            }
+        });
+
+        viewB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (regNum.getText().toString().trim().length() == 0 ) {
+                    showMessage("Error", "Please enter RegNumber");
+                    return;
+                }
+                Cursor c = db.rawQuery("SELECT * FROM STUDENT WHERE RegNo='"+regNum.getText()+ "'" ,null);
+                if(c.moveToFirst())
+                {
+                    name.setText(c.getString(1));
+                    marks.setText(c.getString(2));
+                }
+                else
+                {
+                    showMessage("Error", "Please enter Valid RegNum");
+                    clearText();
+                }
+            }
+        }); 
+    }
+
+    public void showMessage(String title,String message)
+    {
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+        builder.setTitle(title);
+        builder.setMessage(message);
+        builder.show();
+    }
+    public void clearText()
+    {
+        regNum.setText("");
+        name.setText("");
+        marks.setText("");
+        regNum.requestFocus();
+    }
+}
